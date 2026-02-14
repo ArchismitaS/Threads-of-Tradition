@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threads of Tradition | Cultural News</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">Threads of Tradition</a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/lessons">Lessons</a></li>
+          <li><a href="/traditions">Traditions</a></li>
+          <li><a href="/news" aria-current="page">News</a></li>
+          <li><a href="/profile">Profile</a></li>
+          <li><a href="/progress">Progress</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="page-header">
+        <p class="eyebrow">Latest Cultural News</p>
+        <h1>Stay Updated on Global Traditions & Heritage</h1>
+        <p class="lead small" data-news-status>Add your own cultural news updates too.</p>
+      </section>
+
+      <section class="card form-card" aria-label="Add news">
+        <h2>Add Cultural News</h2>
+        <form class="form-grid" data-add-news-form>
+          <input name="title" placeholder="Headline" required />
+          <input name="source" placeholder="Source" />
+          <input name="date" type="date" />
+          <input name="url" placeholder="Source URL" />
+          <textarea name="summary" placeholder="Short summary" rows="3"></textarea>
+          <button class="btn btn-primary" type="submit">Add News Item</button>
+        </form>
+      </section>
+
+      <section class="stack" aria-label="Cultural news list" data-news-list>
+        <article class="card">
+          <h2>Loading latest cultural news…</h2>
+          <p>Please wait while we fetch the latest headlines.</p>
+        </article>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

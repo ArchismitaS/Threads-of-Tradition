@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threads of Tradition | Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">Threads of Tradition</a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/lessons">Lessons</a></li>
+          <li><a href="/traditions">Traditions</a></li>
+          <li><a href="/news">News</a></li>
+          <li><a href="/profile" aria-current="page">Profile</a></li>
+          <li><a href="/progress">Progress</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="page-header">
+        <p class="eyebrow">Learner Profile</p>
+        <h1>Customize Your Cultural Learning Identity</h1>
+        <p class="lead small" data-profile-status>Update your profile and learning goal.</p>
+      </section>
+
+      <section class="card form-card" aria-label="Profile editor">
+        <form class="form-grid" data-profile-form>
+          <input name="displayName" placeholder="Display name" required />
+          <input name="region" placeholder="Region" />
+          <input name="learningGoal" placeholder="Learning goal" />
+          <textarea name="bio" placeholder="Short bio" rows="4"></textarea>
+          <button class="btn btn-primary" type="submit">Save Profile</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
