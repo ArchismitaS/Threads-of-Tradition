@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threads of Tradition | Progress</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">Threads of Tradition</a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/lessons">Lessons</a></li>
+          <li><a href="/traditions">Traditions</a></li>
+          <li><a href="/news">News</a></li>
+          <li><a href="/profile">Profile</a></li>
+          <li><a href="/progress" aria-current="page">Progress</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="page-header">
+        <p class="eyebrow">Learner Dashboard</p>
+        <h1>Your Cultural Literacy Journey</h1>
+      </section>
+
+      <section class="grid three-up" aria-label="Progress statistics">
+        <article class="card stat">
+          <h2 data-progress="lessons">0</h2>
+          <p>Lessons Completed</p>
+        </article>
+        <article class="card stat">
+          <h2 data-progress="streak">1</h2>
+          <p>Day Streak</p>
+        </article>
+        <article class="card stat">
+          <h2 data-progress="badges">1</h2>
+          <p>Badges Earned</p>
+        </article>
+      </section>
+
+      <section class="card" aria-label="Next milestone">
+        <h2>Next Milestone</h2>
+        <p data-progress="milestone">
+          Complete 4 more lessons and 3 news item(s) to finish the core path.
+        </p>
+      </section>
+
+      <section class="card" aria-label="Badge collection">
+        <h2>Unlocked Badges</h2>
+        <ul class="badge-list" data-progress="badge-list">
+          <li>First Steps</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
