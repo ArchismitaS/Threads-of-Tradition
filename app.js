@@ -144,6 +144,38 @@ async function renderLessons(nextState) {
   });
 }
 
+function initSidePanels() {
+  const openPanel = (id) => {
+    const panel = document.getElementById(id);
+    if (!panel) return;
+    panel.classList.add("is-open");
+  };
+
+  const closePanel = (id) => {
+    const panel = document.getElementById(id);
+    if (!panel) return;
+    panel.classList.remove("is-open");
+  };
+
+  document.addEventListener("click", (event) => {
+    const openBtn = event.target.closest("[data-open-panel]");
+    if (openBtn) {
+      openPanel(openBtn.dataset.openPanel);
+      return;
+    }
+
+    const closeBtn = event.target.closest("[data-close-panel]");
+    if (closeBtn) {
+      closePanel(closeBtn.dataset.closePanel);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    document.querySelectorAll(".side-panel.is-open").forEach((panel) => {
+      panel.classList.remove("is-open");
+    });
+  });
 function initLessonPanel() {
   const panel = document.querySelector("[data-lesson-panel]");
   const open = document.querySelector("[data-open-lesson-panel]");
@@ -444,6 +476,10 @@ async function renderAll(nextState) {
 
 async function init() {
   initTraditionsFilter();
+  initSidePanels();
+  initLessonForm();
+  initNewsForm();
+  await initProfilePage();
   initLessonPanel();
   initLessonForm();
   initNewsPanel();
