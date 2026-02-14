@@ -36,6 +36,10 @@ const defaultLessons = [
 ];
 
 const defaultNews = [
+const lessonIds = ["greetings", "festivals", "family", "language"];
+const newsIds = ["unesco-restoration", "diaspora-festival", "language-revival", "museum-repatriation"];
+
+const newsFeed = [
   {
     id: "unesco-restoration",
     title: "UNESCO Supports Restoration of Historic Cultural Sites",
@@ -122,6 +126,10 @@ function readState() {
     : [];
 
   const readNews = Array.isArray(parsed.readNews)
+function readState() {
+  const raw = fs.readFileSync(STATE_PATH, "utf8");
+  const parsed = JSON.parse(raw);
+  const savedReadNews = Array.isArray(parsed.readNews)
     ? parsed.readNews
     : Array.isArray(parsed.readStories)
       ? parsed.readStories
@@ -146,6 +154,12 @@ function readState() {
   state.readNews = state.readNews.filter((id) => allNewsIds(state).includes(id));
 
   return state;
+  return {
+    completedLessons: Array.isArray(parsed.completedLessons) ? parsed.completedLessons : [],
+    readNews: savedReadNews,
+    streak: Number.isFinite(parsed.streak) ? parsed.streak : 1,
+    badges: Array.isArray(parsed.badges) && parsed.badges.length ? parsed.badges : ["First Steps"],
+  };
 }
 
 function writeState(state) {
@@ -308,6 +322,43 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/state" && req.method === "GET") {
     return json(res, 200, readState());
+  if (pathname === "/api/news" && req.method === "GET") {
+    return json(res, 200, newsFeed);
+  }
+
+  if (pathname === "/api/state" && req.method === "GET") {
+    return json(res, 200, readState());
+  }
+
+  if (pathname === "/api/state" && req.method === "PUT") {
+    const body = await collectBody(req);
+    let payload;
+    try {
+      payload = JSON.parse(body || "{}");
+    } catch {
+      return badRequest(res, "Invalid JSON body");
+    }
+
+    const incomingReadNews = Array.isArray(payload.readNews)
+      ? payload.readNews
+      : Array.isArray(payload.readStories)
+        ? payload.readStories
+        : [];
+
+    const next = {
+      completedLessons: Array.isArray(payload.completedLessons)
+        ? payload.completedLessons.filter((id) => lessonIds.includes(id))
+        : [],
+      readNews: incomingReadNews.filter((id) => newsIds.includes(id)),
+      streak: Number.isFinite(payload.streak) && payload.streak > 0 ? payload.streak : 1,
+      badges:
+        Array.isArray(payload.badges) && payload.badges.length
+          ? payload.badges.map((badge) => String(badge))
+          : ["First Steps"],
+    };
+
+    writeState(next);
+    return json(res, 200, next);
   }
 
   if (pathname === "/api/reset" && req.method === "POST") {
@@ -330,6 +381,14 @@ async function handleApi(req, res, pathname) {
     const state = readState();
     if (!allLessonIds(state).includes(id)) return badRequest(res, "Unknown lesson id");
 
+  const lessonMatch = pathname.match(/^\/api\/lessons\/([a-z-]+)\/toggle$/);
+  if (lessonMatch && req.method === "POST") {
+    const id = lessonMatch[1];
+    if (!lessonIds.includes(id)) {
+      return badRequest(res, "Unknown lesson id");
+    }
+
+    const state = readState();
     if (state.completedLessons.includes(id)) {
       state.completedLessons = state.completedLessons.filter((entry) => entry !== id);
     } else {
@@ -338,6 +397,7 @@ async function handleApi(req, res, pathname) {
     }
 
     if (state.completedLessons.length >= allLessonIds(state).length) {
+    if (state.completedLessons.length >= lessonIds.length) {
       ensureBadge(state, "Lesson Pathfinder");
     }
 
@@ -351,6 +411,14 @@ async function handleApi(req, res, pathname) {
     const state = readState();
     if (!allNewsIds(state).includes(id)) return badRequest(res, "Unknown news id");
 
+  const newsMatch = pathname.match(/^\/api\/(news|stories)\/([a-z-]+)\/toggle$/);
+  if (newsMatch && req.method === "POST") {
+    const id = newsMatch[2];
+    if (!newsIds.includes(id)) {
+      return badRequest(res, "Unknown news id");
+    }
+
+    const state = readState();
     if (state.readNews.includes(id)) {
       state.readNews = state.readNews.filter((entry) => entry !== id);
     } else {
@@ -358,6 +426,7 @@ async function handleApi(req, res, pathname) {
     }
 
     if (state.readNews.length >= allNewsIds(state).length) {
+    if (state.readNews.length >= newsIds.length) {
       ensureBadge(state, "News Explorer");
     }
 
@@ -381,6 +450,11 @@ function resolvePathname(pathname) {
   };
 
   if (routes[pathname]) return routes[pathname];
+  };
+
+  // Normalize trailing slashes so "/lessons/" resolves like "/lessons"
+  const normalized = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
+  if (routes[normalized]) return routes[normalized];
   return pathname;
 }
 
@@ -410,6 +484,7 @@ function serveStatic(req, res, pathname) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || `localhost:${PORT}`}`);
+    console.log(`Request: ${req.method} ${url.pathname}`);
 
     if (url.pathname.startsWith("/api/")) {
       await handleApi(req, res, url.pathname);
