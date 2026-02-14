@@ -249,6 +249,21 @@ h1 span {
 }
 
 
+.side-launcher {
+  position: fixed;
+  right: 0;
+  top: 40%;
+  transform: translateY(-50%);
+  z-index: 30;
+  border: 1px solid var(--border);
+  border-right: 0;
+  border-radius: 0.8rem 0 0 0.8rem;
+  background: #111a33;
+  color: var(--text);
+  font-weight: 700;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+}
 
 .side-panel {
   position: fixed;
