@@ -157,7 +157,10 @@ async function renderNews(nextState) {
   const container = document.querySelector("[data-news-list]");
   if (!container) return;
 
-  newsCatalog = await apiGetNews();
+  const allNews = await apiGetNews();
+  const custom = allNews.filter((item) => item.id.startsWith("news-"));
+  const defaults = allNews.filter((item) => !item.id.startsWith("news-"));
+  newsCatalog = [...custom.reverse(), ...defaults];
   container.innerHTML = "";
 
   newsCatalog.forEach((item) => {
@@ -191,6 +194,19 @@ async function renderNews(nextState) {
   });
 }
 
+function initNewsPanel() {
+  const panel = document.querySelector("[data-news-panel]");
+  const open = document.querySelector("[data-open-news-panel]");
+  const close = document.querySelector("[data-close-news-panel]");
+  if (!panel || !open || !close) return;
+
+  const openPanel = () => panel.classList.add("is-open");
+  const closePanel = () => panel.classList.remove("is-open");
+
+  open.onclick = openPanel;
+  close.onclick = closePanel;
+}
+
 function initNewsForm() {
   const form = document.querySelector("[data-add-news-form]");
   if (!form) return;
@@ -210,7 +226,7 @@ function initNewsForm() {
       form.reset();
       state = await apiGetState();
       await renderAll(state);
-      setMessage("[data-news-status]", "News item added.");
+      setMessage("[data-news-status]", "News item added to latest list.");
     } catch (error) {
       console.error(error);
       setMessage("[data-news-status]", "Could not add news item.", true);
@@ -312,6 +328,7 @@ async function init() {
   initTraditionsFilter();
   initLessonPanel();
   initLessonForm();
+  initNewsPanel();
   initNewsForm();
   await initProfilePage();
 
