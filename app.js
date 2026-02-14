@@ -96,6 +96,10 @@ async function renderLessons(nextState) {
   const container = document.querySelector("[data-lessons-list]");
   if (!container) return;
 
+  const allLessons = await apiGetLessons();
+  const custom = allLessons.filter((lesson) => lesson.id.startsWith("lesson-"));
+  const defaults = allLessons.filter((lesson) => !lesson.id.startsWith("lesson-"));
+  lessonCatalog = [...custom.reverse(), ...defaults];
   lessonCatalog = await apiGetLessons();
   container.innerHTML = "";
 
@@ -140,6 +144,19 @@ async function renderLessons(nextState) {
   });
 }
 
+function initLessonPanel() {
+  const panel = document.querySelector("[data-lesson-panel]");
+  const open = document.querySelector("[data-open-lesson-panel]");
+  const close = document.querySelector("[data-close-lesson-panel]");
+  if (!panel || !open || !close) return;
+
+  const openPanel = () => panel.classList.add("is-open");
+  const closePanel = () => panel.classList.remove("is-open");
+
+  open.onclick = openPanel;
+  close.onclick = closePanel;
+}
+
 function initLessonForm() {
   const form = document.querySelector("[data-add-lesson-form]");
   if (!form) return;
@@ -158,6 +175,7 @@ function initLessonForm() {
       form.reset();
       state = await apiGetState();
       await renderAll(state);
+      setMessage("[data-lessons-status]", "New lesson added to latest list.");
       setMessage("[data-lessons-status]", "New lesson added.");
     } catch (error) {
       console.error(error);
@@ -170,6 +188,10 @@ async function renderNews(nextState) {
   const container = document.querySelector("[data-news-list]");
   if (!container) return;
 
+  const allNews = await apiGetNews();
+  const custom = allNews.filter((item) => item.id.startsWith("news-"));
+  const defaults = allNews.filter((item) => !item.id.startsWith("news-"));
+  newsCatalog = [...custom.reverse(), ...defaults];
   newsCatalog = await apiGetNews();
   container.innerHTML = "";
 
@@ -204,6 +226,19 @@ async function renderNews(nextState) {
   });
 }
 
+function initNewsPanel() {
+  const panel = document.querySelector("[data-news-panel]");
+  const open = document.querySelector("[data-open-news-panel]");
+  const close = document.querySelector("[data-close-news-panel]");
+  if (!panel || !open || !close) return;
+
+  const openPanel = () => panel.classList.add("is-open");
+  const closePanel = () => panel.classList.remove("is-open");
+
+  open.onclick = openPanel;
+  close.onclick = closePanel;
+}
+
 function initNewsForm() {
   const form = document.querySelector("[data-add-news-form]");
   if (!form) return;
@@ -223,6 +258,7 @@ function initNewsForm() {
       form.reset();
       state = await apiGetState();
       await renderAll(state);
+      setMessage("[data-news-status]", "News item added to latest list.");
       setMessage("[data-news-status]", "News item added.");
     } catch (error) {
       console.error(error);
@@ -408,6 +444,9 @@ async function renderAll(nextState) {
 
 async function init() {
   initTraditionsFilter();
+  initLessonPanel();
+  initLessonForm();
+  initNewsPanel();
   initLessonForm();
   initNewsForm();
 

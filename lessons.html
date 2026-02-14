@@ -27,11 +27,34 @@
       </nav>
     </header>
 
+    <button class="side-launcher" type="button" data-open-lesson-panel aria-controls="lesson-side-panel">
+      Add Lesson
+    </button>
+
+    <aside class="side-panel" id="lesson-side-panel" data-lesson-panel>
+      <div class="side-panel-head">
+        <h2>Add Your Own Lesson</h2>
+        <button class="btn btn-secondary" type="button" data-close-lesson-panel>Close</button>
+      </div>
+      <form class="form-grid" data-add-lesson-form>
+        <input name="title" placeholder="Lesson title" required />
+        <input name="duration" placeholder="Duration (e.g. 6 minutes)" />
+        <input name="level" placeholder="Level (Beginner/Intermediate/Advanced)" />
+        <textarea name="summary" placeholder="What should learners know?" rows="3"></textarea>
+        <button class="btn btn-primary" type="submit">Add Lesson</button>
+      </form>
+    </aside>
+
     <main class="container">
       <section class="page-header">
         <p class="eyebrow">Lesson Path</p>
         <h1>Choose or Create Learning Sprints</h1>
         <p class="lead small" data-lessons-status>
+          Tap “Add Lesson” on the side to open the form. New lessons appear first in the latest list.
+        </p>
+      </section>
+
+      <section class="grid two-up" aria-label="Latest lesson modules" data-lessons-list></section>
           Mark complete with checkbox/button, or add your own lesson below.
         </p>
       </section>

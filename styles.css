@@ -247,3 +247,50 @@ h1 span {
   color: var(--text);
   font-family: inherit;
 }
+
+
+.side-launcher {
+  position: fixed;
+  right: 0;
+  top: 40%;
+  transform: translateY(-50%);
+  z-index: 30;
+  border: 1px solid var(--border);
+  border-right: 0;
+  border-radius: 0.8rem 0 0 0.8rem;
+  background: #111a33;
+  color: var(--text);
+  font-weight: 700;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+}
+
+.side-panel {
+  position: fixed;
+  right: -420px;
+  top: 0;
+  width: min(420px, 95vw);
+  height: 100vh;
+  z-index: 40;
+  background: #0a1020;
+  border-left: 1px solid var(--border);
+  padding: 1rem;
+  transition: right 0.25s ease;
+  overflow-y: auto;
+}
+
+.side-panel.is-open {
+  right: 0;
+}
+
+.side-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.side-panel-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
