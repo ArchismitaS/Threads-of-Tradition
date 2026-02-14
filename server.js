@@ -9,15 +9,59 @@ const ROOT = __dirname;
 const STATE_PATH = path.join(ROOT, "data", "state.json");
 
 const lessonIds = ["greetings", "festivals", "family", "language"];
-const storyIds = ["lantern-maker", "bread-neighborhood", "drumbeats-sunset"];
+const newsIds = ["unesco-restoration", "diaspora-festival", "language-revival", "museum-repatriation"];
+
+const newsFeed = [
+  {
+    id: "unesco-restoration",
+    title: "UNESCO Supports Restoration of Historic Cultural Sites",
+    source: "Global Heritage Journal",
+    date: "2026-02-12",
+    summary:
+      "A new preservation initiative is funding restoration work for community-led heritage landmarks across multiple regions.",
+    url: "https://example.com/news/unesco-restoration",
+  },
+  {
+    id: "diaspora-festival",
+    title: "Diaspora Festival Highlights Intergenerational Food Traditions",
+    source: "Culture Now",
+    date: "2026-02-11",
+    summary:
+      "Cities worldwide are hosting culinary storytelling events where families share migration histories through traditional dishes.",
+    url: "https://example.com/news/diaspora-festival",
+  },
+  {
+    id: "language-revival",
+    title: "Community Schools Expand Indigenous Language Revival Programs",
+    source: "World Learning Desk",
+    date: "2026-02-10",
+    summary:
+      "Grassroots education groups report rising youth participation in heritage language and oral tradition workshops.",
+    url: "https://example.com/news/language-revival",
+  },
+  {
+    id: "museum-repatriation",
+    title: "Museums Announce New Repatriation Partnerships",
+    source: "Arts & Society News",
+    date: "2026-02-09",
+    summary:
+      "Institutions are collaborating with cultural councils to return artifacts and co-curate community narratives.",
+    url: "https://example.com/news/museum-repatriation",
+  },
+];
 
 function readState() {
   const raw = fs.readFileSync(STATE_PATH, "utf8");
   const parsed = JSON.parse(raw);
+  const savedReadNews = Array.isArray(parsed.readNews)
+    ? parsed.readNews
+    : Array.isArray(parsed.readStories)
+      ? parsed.readStories
+      : [];
 
   return {
     completedLessons: Array.isArray(parsed.completedLessons) ? parsed.completedLessons : [],
-    readStories: Array.isArray(parsed.readStories) ? parsed.readStories : [],
+    readNews: savedReadNews,
     streak: Number.isFinite(parsed.streak) ? parsed.streak : 1,
     badges: Array.isArray(parsed.badges) && parsed.badges.length ? parsed.badges : ["First Steps"],
   };
@@ -81,6 +125,10 @@ async function handleApi(req, res, pathname) {
     return json(res, 200, { ok: true });
   }
 
+  if (pathname === "/api/news" && req.method === "GET") {
+    return json(res, 200, newsFeed);
+  }
+
   if (pathname === "/api/state" && req.method === "GET") {
     return json(res, 200, readState());
   }
@@ -94,17 +142,22 @@ async function handleApi(req, res, pathname) {
       return badRequest(res, "Invalid JSON body");
     }
 
+    const incomingReadNews = Array.isArray(payload.readNews)
+      ? payload.readNews
+      : Array.isArray(payload.readStories)
+        ? payload.readStories
+        : [];
+
     const next = {
       completedLessons: Array.isArray(payload.completedLessons)
         ? payload.completedLessons.filter((id) => lessonIds.includes(id))
         : [],
-      readStories: Array.isArray(payload.readStories)
-        ? payload.readStories.filter((id) => storyIds.includes(id))
-        : [],
+      readNews: incomingReadNews.filter((id) => newsIds.includes(id)),
       streak: Number.isFinite(payload.streak) && payload.streak > 0 ? payload.streak : 1,
-      badges: Array.isArray(payload.badges) && payload.badges.length
-        ? payload.badges.map((badge) => String(badge))
-        : ["First Steps"],
+      badges:
+        Array.isArray(payload.badges) && payload.badges.length
+          ? payload.badges.map((badge) => String(badge))
+          : ["First Steps"],
     };
 
     writeState(next);
@@ -114,7 +167,7 @@ async function handleApi(req, res, pathname) {
   if (pathname === "/api/reset" && req.method === "POST") {
     const reset = {
       completedLessons: [],
-      readStories: [],
+      readNews: [],
       streak: 1,
       badges: ["First Steps"],
     };
@@ -145,22 +198,22 @@ async function handleApi(req, res, pathname) {
     return json(res, 200, state);
   }
 
-  const storyMatch = pathname.match(/^\/api\/stories\/([a-z-]+)\/toggle$/);
-  if (storyMatch && req.method === "POST") {
-    const id = storyMatch[1];
-    if (!storyIds.includes(id)) {
-      return badRequest(res, "Unknown story id");
+  const newsMatch = pathname.match(/^\/api\/(news|stories)\/([a-z-]+)\/toggle$/);
+  if (newsMatch && req.method === "POST") {
+    const id = newsMatch[2];
+    if (!newsIds.includes(id)) {
+      return badRequest(res, "Unknown news id");
     }
 
     const state = readState();
-    if (state.readStories.includes(id)) {
-      state.readStories = state.readStories.filter((entry) => entry !== id);
+    if (state.readNews.includes(id)) {
+      state.readNews = state.readNews.filter((entry) => entry !== id);
     } else {
-      state.readStories.push(id);
+      state.readNews.push(id);
     }
 
-    if (state.readStories.length >= storyIds.length) {
-      ensureBadge(state, "Story Seeker");
+    if (state.readNews.length >= newsIds.length) {
+      ensureBadge(state, "News Explorer");
     }
 
     writeState(state);
@@ -170,8 +223,25 @@ async function handleApi(req, res, pathname) {
   return notFound(res);
 }
 
+function resolvePathname(pathname) {
+  const routes = {
+    "/": "/index.html",
+    "/index": "/index.html",
+    "/lessons": "/lessons.html",
+    "/traditions": "/traditions.html",
+    "/news": "/news.html",
+    "/stories": "/news.html",
+    "/progress": "/progress.html",
+  };
+
+  // Normalize trailing slashes so "/lessons/" resolves like "/lessons"
+  const normalized = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
+  if (routes[normalized]) return routes[normalized];
+  return pathname;
+}
+
 function serveStatic(req, res, pathname) {
-  const cleanPath = pathname === "/" ? "/index.html" : pathname;
+  const cleanPath = resolvePathname(pathname);
   const requested = path.normalize(cleanPath).replace(/^\/+/, "");
   const fullPath = path.join(ROOT, requested);
 
@@ -196,6 +266,7 @@ function serveStatic(req, res, pathname) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || `localhost:${PORT}`}`);
+    console.log(`Request: ${req.method} ${url.pathname}`);
 
     if (url.pathname.startsWith("/api/")) {
       await handleApi(req, res, url.pathname);

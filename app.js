@@ -1,9 +1,9 @@
 const lessonIds = ["greetings", "festivals", "family", "language"];
-const storyIds = ["lantern-maker", "bread-neighborhood", "drumbeats-sunset"];
+const newsIds = ["unesco-restoration", "diaspora-festival", "language-revival", "museum-repatriation"];
 
 const defaultState = {
   completedLessons: [],
-  readStories: [],
+  readNews: [],
   streak: 1,
   badges: ["First Steps"],
 };
@@ -16,15 +16,21 @@ async function apiGetState() {
   return res.json();
 }
 
+async function apiGetNews() {
+  const res = await fetch("/api/news");
+  if (!res.ok) throw new Error("Failed to fetch news");
+  return res.json();
+}
+
 async function apiToggleLesson(id) {
   const res = await fetch(`/api/lessons/${id}/toggle`, { method: "POST" });
   if (!res.ok) throw new Error("Failed to toggle lesson");
   return res.json();
 }
 
-async function apiToggleStory(id) {
-  const res = await fetch(`/api/stories/${id}/toggle`, { method: "POST" });
-  if (!res.ok) throw new Error("Failed to toggle story");
+async function apiToggleNews(id) {
+  const res = await fetch(`/api/news/${id}/toggle`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to toggle news item");
   return res.json();
 }
 
@@ -67,33 +73,6 @@ function syncLessons(nextState) {
   });
 }
 
-function syncStories(nextState) {
-  const storyCards = document.querySelectorAll("[data-story-id]");
-  if (!storyCards.length) return;
-
-  storyCards.forEach((card) => {
-    const id = card.dataset.storyId;
-    const button = card.querySelector("button");
-    const isRead = nextState.readStories.includes(id);
-
-    card.classList.toggle("is-complete", isRead);
-    if (button) {
-      button.textContent = isRead ? "Read" : "Mark as Read";
-      button.disabled = false;
-      button.onclick = async () => {
-        button.disabled = true;
-        try {
-          state = await apiToggleStory(id);
-          renderAll(state);
-        } catch (error) {
-          console.error(error);
-          button.disabled = false;
-        }
-      };
-    }
-  });
-}
-
 function syncProgress(nextState) {
   const lessonsDone = nextState.completedLessons.length;
 
@@ -109,11 +88,11 @@ function syncProgress(nextState) {
 
   if (milestone) {
     const remainingLessons = Math.max(0, lessonIds.length - lessonsDone);
-    const remainingStories = Math.max(0, storyIds.length - nextState.readStories.length);
+    const remainingNews = Math.max(0, newsIds.length - nextState.readNews.length);
     milestone.textContent =
-      remainingLessons === 0 && remainingStories === 0
+      remainingLessons === 0 && remainingNews === 0
         ? "All core content complete! Keep practicing daily to grow your streak."
-        : `Complete ${remainingLessons} more lesson(s) and ${remainingStories} story reflection(s) to finish the core path.`;
+        : `Complete ${remainingLessons} more lesson(s) and read ${remainingNews} more news item(s) to finish the core path.`;
   }
 
   if (badgeList) {
@@ -123,6 +102,53 @@ function syncProgress(nextState) {
       li.textContent = badge;
       badgeList.appendChild(li);
     });
+  }
+}
+
+async function renderNews(nextState) {
+  const container = document.querySelector("[data-news-list]");
+  if (!container) return;
+
+  try {
+    const items = await apiGetNews();
+    container.innerHTML = "";
+
+    items.forEach((item) => {
+      const article = document.createElement("article");
+      const isRead = nextState.readNews.includes(item.id);
+      article.className = `card ${isRead ? "is-complete" : ""}`.trim();
+      article.innerHTML = `
+        <h2>${item.title}</h2>
+        <p>${item.summary}</p>
+        <p class="meta">${item.source} · ${item.date}</p>
+        <div class="action-row">
+          <a class="btn btn-secondary" href="${item.url}" target="_blank" rel="noopener noreferrer">Read Source</a>
+          <button class="btn btn-secondary" type="button">${isRead ? "Read" : "Mark as Read"}</button>
+        </div>
+      `;
+
+      const button = article.querySelector("button");
+      button.onclick = async () => {
+        button.disabled = true;
+        try {
+          state = await apiToggleNews(item.id);
+          await renderAll(state);
+        } catch (error) {
+          console.error(error);
+          button.disabled = false;
+        }
+      };
+
+      container.appendChild(article);
+    });
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = `
+      <article class="card">
+        <h2>Could not load cultural news</h2>
+        <p>Please refresh the page after the backend is running.</p>
+      </article>
+    `;
   }
 }
 
@@ -142,24 +168,33 @@ function initTraditionsFilter() {
   });
 }
 
-function renderAll(nextState) {
+async function renderAll(nextState) {
   syncHome(nextState);
   syncLessons(nextState);
-  syncStories(nextState);
   syncProgress(nextState);
+  await renderNews(nextState);
 }
 
 async function init() {
   initTraditionsFilter();
 
   try {
-    state = await apiGetState();
+    const rawState = await apiGetState();
+    state = {
+      ...defaultState,
+      ...rawState,
+      readNews: Array.isArray(rawState.readNews)
+        ? rawState.readNews
+        : Array.isArray(rawState.readStories)
+          ? rawState.readStories
+          : [],
+    };
   } catch (error) {
     console.error("Backend unavailable, showing defaults.", error);
     state = { ...defaultState };
   }
 
-  renderAll(state);
+  await renderAll(state);
 }
 
 init();
