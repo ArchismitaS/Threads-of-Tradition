@@ -56,6 +56,22 @@
       </section>
 
       <section class="stack" aria-label="Latest cultural news list" data-news-list>
+        <p class="lead small" data-news-status>Add your own cultural news updates too.</p>
+      </section>
+
+      <section class="card form-card" aria-label="Add news">
+        <h2>Add Cultural News</h2>
+        <form class="form-grid" data-add-news-form>
+          <input name="title" placeholder="Headline" required />
+          <input name="source" placeholder="Source" />
+          <input name="date" type="date" />
+          <input name="url" placeholder="Source URL" />
+          <textarea name="summary" placeholder="Short summary" rows="3"></textarea>
+          <button class="btn btn-primary" type="submit">Add News Item</button>
+        </form>
+      </section>
+
+      <section class="stack" aria-label="Cultural news list" data-news-list>
         <article class="card">
           <h2>Loading latest cultural news…</h2>
           <p>Please wait while we fetch the latest headlines.</p>
