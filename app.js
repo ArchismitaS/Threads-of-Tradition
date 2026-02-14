@@ -410,7 +410,6 @@ async function init() {
   initTraditionsFilter();
   initLessonForm();
   initNewsForm();
-  await initProfilePage();
 
   try {
     const rawState = await apiGetState();
@@ -433,6 +432,8 @@ async function init() {
   } catch (error) {
     console.error(error);
   }
+  // Initialize profile after state is loaded and the page rendered
+  await initProfilePage();
   await renderAll(state);
 }
 
