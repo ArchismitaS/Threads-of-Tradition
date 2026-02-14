@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threads of Tradition | Traditions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">Threads of Tradition</a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/lessons">Lessons</a></li>
+          <li><a href="/traditions" aria-current="page">Traditions</a></li>
+          <li><a href="/news">News</a></li>
+          <li><a href="/progress">Progress</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="page-header">
+        <p class="eyebrow">Cultural Atlas</p>
+        <h1>Traditions by Theme</h1>
+        <label class="search-wrap" for="tradition-search">
+          Search traditions:
+          <input id="tradition-search" type="search" placeholder="Try: food, dance, wedding" />
+        </label>
+      </section>
+
+      <section class="grid three-up" aria-label="Tradition categories">
+        <article class="card" data-tradition-title="food customs">
+          <h2>Food Customs</h2>
+          <p>Learn how table etiquette and meal rituals differ from region to region.</p>
+        </article>
+        <article class="card" data-tradition-title="coming of age">
+          <h2>Coming-of-Age</h2>
+          <p>Explore ceremonies that mark transitions into adulthood across cultures.</p>
+        </article>
+        <article class="card" data-tradition-title="wedding rituals">
+          <h2>Wedding Rituals</h2>
+          <p>Unpack symbolic colors, garments, and community roles in wedding traditions.</p>
+        </article>
+        <article class="card" data-tradition-title="seasonal celebrations">
+          <h2>Seasonal Celebrations</h2>
+          <p>Understand traditions linked to harvest, renewal, and ancestral remembrance.</p>
+        </article>
+        <article class="card" data-tradition-title="music and dance">
+          <h2>Music & Dance</h2>
+          <p>See how rhythm, movement, and storytelling preserve cultural identity.</p>
+        </article>
+        <article class="card" data-tradition-title="craft and dress">
+          <h2>Craft & Dress</h2>
+          <p>Study traditional fabrics, motifs, and craftsmanship techniques.</p>
+        </article>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
