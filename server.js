@@ -72,6 +72,17 @@ const defaultNews = [
       "Institutions are collaborating with cultural councils to return artifacts and co-curate community narratives.",
     url: "https://example.com/news/museum-repatriation",
   },
+  { id: "greetings", title: "Greeting Rituals Around the World", summary: "Understand why bows, handshakes, and cheek-kisses carry deep cultural meaning.", meta: "5 minutes · Beginner" },
+  { id: "festivals", title: "Festival Traditions", summary: "Discover food, music, and symbols behind major seasonal festivals globally.", meta: "7 minutes · Beginner" },
+  { id: "family", title: "Family & Community Values", summary: "Compare social norms around family roles, hospitality, and intergenerational respect.", meta: "8 minutes · Intermediate" },
+  { id: "language", title: "Language, Proverbs & Identity", summary: "Learn how sayings and expressions preserve history, humor, and cultural wisdom.", meta: "10 minutes · Intermediate" },
+];
+
+const defaultNews = [
+  { id: "unesco-restoration", title: "UNESCO Supports Restoration of Historic Cultural Sites", source: "Global Heritage Journal", date: "2026-02-12", summary: "A new preservation initiative is funding restoration work for community-led heritage landmarks across multiple regions.", url: "https://example.com/news/unesco-restoration" },
+  { id: "diaspora-festival", title: "Diaspora Festival Highlights Intergenerational Food Traditions", source: "Culture Now", date: "2026-02-11", summary: "Cities worldwide are hosting culinary storytelling events where families share migration histories through traditional dishes.", url: "https://example.com/news/diaspora-festival" },
+  { id: "language-revival", title: "Community Schools Expand Indigenous Language Revival Programs", source: "World Learning Desk", date: "2026-02-10", summary: "Grassroots education groups report rising youth participation in heritage language and oral tradition workshops.", url: "https://example.com/news/language-revival" },
+  { id: "museum-repatriation", title: "Museums Announce New Repatriation Partnerships", source: "Arts & Society News", date: "2026-02-09", summary: "Institutions are collaborating with cultural councils to return artifacts and co-curate community narratives.", url: "https://example.com/news/museum-repatriation" },
 ];
 
 const defaultProfile = {
@@ -179,6 +190,35 @@ function collectBody(req) {
     req.on("end", () => resolve(body));
     req.on("error", reject);
   });
+function readState() {
+  try {
+    const raw = fs.readFileSync(STATE_PATH, "utf8");
+    const parsed = JSON.parse(raw || "{}");
+    return {
+      completedLessons: Array.isArray(parsed.completedLessons) ? parsed.completedLessons : [],
+      readNews: Array.isArray(parsed.readNews) ? parsed.readNews : [],
+      streak: Number.isFinite(parsed.streak) ? parsed.streak : 1,
+      badges: Array.isArray(parsed.badges) && parsed.badges.length ? parsed.badges : ["First Steps"],
+      customLessons: Array.isArray(parsed.customLessons) ? parsed.customLessons : [],
+      customNews: Array.isArray(parsed.customNews) ? parsed.customNews : [],
+      profile: typeof parsed.profile === "object" && parsed.profile ? parsed.profile : { ...defaultProfile },
+    };
+  } catch (err) {
+    return {
+      completedLessons: [],
+      readNews: [],
+      streak: 1,
+      badges: ["First Steps"],
+      customLessons: [],
+      customNews: [],
+      profile: { ...defaultProfile },
+    };
+  }
+}
+
+function writeState(state) {
+  fs.mkdirSync(path.dirname(STATE_PATH), { recursive: true });
+  fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2) + "\n");
 }
 
 function json(res, code, payload) {
@@ -255,6 +295,50 @@ async function handleApi(req, res, pathname) {
     const state = readState();
     state.profile = {
       ...defaultProfile,
+function getContentType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const map = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8", ".json": "application/json; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml" };
+  return map[ext] || "application/octet-stream";
+}
+
+async function collectBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; if (body.length > 1e6) { req.destroy(); reject(new Error("Request too large")); } });
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
+function resolvePathname(pathname) {
+  const routes = {
+    "/": "/index.html",
+    "/index": "/index.html",
+    "/lessons": "/lessons.html",
+    "/traditions": "/traditions.html",
+    "/news": "/news.html",
+    "/stories": "/news.html",
+    "/progress": "/progress.html",
+    "/profile": "/profile.html",
+  };
+  const normalized = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
+  if (routes[normalized]) return routes[normalized];
+  return pathname;
+}
+
+async function handleApi(req, res, pathname) {
+  if (pathname === "/api/health" && req.method === "GET") return json(res, 200, { ok: true });
+  if (pathname === "/api/lessons" && req.method === "GET") { const state = readState(); return json(res, 200, [...defaultLessons, ...state.customLessons]); }
+  if (pathname === "/api/news" && req.method === "GET") { const state = readState(); return json(res, 200, [...defaultNews, ...state.customNews]); }
+  if (pathname === "/api/state" && req.method === "GET") { const state = readState(); return json(res, 200, { completedLessons: state.completedLessons, readNews: state.readNews, streak: state.streak, badges: state.badges }); }
+
+  if (pathname === "/api/profile" && req.method === "GET") { const state = readState(); return json(res, 200, state.profile); }
+  if (pathname === "/api/profile" && req.method === "PUT") {
+    const body = await collectBody(req);
+    let payload;
+    try { payload = JSON.parse(body || "{}"); } catch { return json(res, 400, { error: "Invalid JSON body" }); }
+    const state = readState();
+    state.profile = {
       displayName: String(payload.displayName || defaultProfile.displayName).slice(0, 80),
       region: String(payload.region || defaultProfile.region).slice(0, 80),
       bio: String(payload.bio || defaultProfile.bio).slice(0, 400),
@@ -363,6 +447,40 @@ async function handleApi(req, res, pathname) {
 
     writeState(state);
     return json(res, 200, state);
+    const body = await collectBody(req);
+    let payload;
+    try { payload = JSON.parse(body || "{}"); } catch { return json(res, 400, { error: "Invalid JSON body" }); }
+    const title = String(payload.title || "").trim(); if (!title) return json(res, 400, { error: "Lesson title is required" });
+    const id = `lesson-${Date.now().toString(36)}`;
+    const lesson = { id, title, summary: String(payload.summary || "Community-created lesson"), meta: `${String(payload.duration || "5 minutes")} · ${String(payload.level || "Custom")}` };
+    const state = readState(); state.customLessons.push(lesson); writeState(state); return json(res, 201, lesson);
+  }
+
+  if (pathname.match(/^\/api\/lessons\/[a-z-]+\/toggle$/) && req.method === "POST") {
+    const id = pathname.split("/")[3];
+    const state = readState();
+    if (state.completedLessons.includes(id)) state.completedLessons = state.completedLessons.filter((x) => x !== id);
+    else { state.completedLessons.push(id); state.streak = (state.streak || 1) + 1; }
+    if ((state.completedLessons || []).length >= defaultLessons.length) { if (!state.badges.includes("Lesson Pathfinder")) state.badges.push("Lesson Pathfinder"); }
+    writeState(state); return json(res, 200, state);
+  }
+
+  if (pathname === "/api/news" && req.method === "POST") {
+    const body = await collectBody(req);
+    let payload;
+    try { payload = JSON.parse(body || "{}"); } catch { return json(res, 400, { error: "Invalid JSON body" }); }
+    const id = `news-${Date.now().toString(36)}`;
+    const item = { id, title: String(payload.title || "Untitled"), source: String(payload.source || "Community"), date: String(payload.date || new Date().toISOString().slice(0,10)), summary: String(payload.summary || ""), url: String(payload.url || "https://example.com") };
+    const state = readState(); state.customNews.push(item); writeState(state); return json(res, 201, item);
+  }
+
+  if (pathname.match(/^\/api\/(news|stories)\/[a-z-]+\/toggle$/) && req.method === "POST") {
+    const id = pathname.split("/")[3];
+    const state = readState();
+    if (state.readNews.includes(id)) state.readNews = state.readNews.filter((x) => x !== id);
+    else state.readNews.push(id);
+    if ((state.readNews || []).length >= defaultNews.length) { if (!state.badges.includes("News Explorer")) state.badges.push("News Explorer"); }
+    writeState(state); return json(res, 200, state);
   }
 
   return notFound(res);
@@ -404,6 +522,20 @@ function serveStatic(req, res, pathname) {
 
     res.writeHead(200, { "Content-Type": getContentType(fullPath) });
     res.end(content);
+  if (!fullPath.startsWith(ROOT)) { res.writeHead(403); res.end("Forbidden"); return; }
+
+  fs.readFile(fullPath, (err, content) => {
+    if (err) {
+      const altPath = fullPath + ".html";
+      fs.readFile(altPath, (altErr, altContent) => {
+        if (!altErr) {
+          res.writeHead(200, { "Content-Type": getContentType(altPath) }); res.end(altContent); return;
+        }
+        res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }); res.end("Not Found");
+      });
+      return;
+    }
+    res.writeHead(200, { "Content-Type": getContentType(fullPath) }); res.end(content);
   });
 }
 
@@ -420,6 +552,11 @@ const server = http.createServer(async (req, res) => {
   } catch (err) {
     res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });
     res.end(JSON.stringify({ error: "Internal server error", detail: err.message }));
+    console.log(`Request: ${req.method} ${url.pathname}`);
+    if (url.pathname.startsWith("/api/")) { await handleApi(req, res, url.pathname); return; }
+    serveStatic(req, res, url.pathname);
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" }); res.end(JSON.stringify({ error: "Internal server error", detail: err.message }));
   }
 });
 

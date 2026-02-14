@@ -28,6 +28,7 @@
     </header>
 
     <button class="side-launcher" type="button" data-open-panel="lesson-side-panel" aria-controls="lesson-side-panel">
+    <button class="side-launcher" type="button" data-open-lesson-panel aria-controls="lesson-side-panel">
       Add Lesson
     </button>
 
@@ -35,6 +36,7 @@
       <div class="side-panel-head">
         <h2>Add Your Own Lesson</h2>
         <button class="btn btn-secondary" type="button" data-close-panel="lesson-side-panel">Close</button>
+        <button class="btn btn-secondary" type="button" data-close-lesson-panel>Close</button>
       </div>
       <form class="form-grid" data-add-lesson-form>
         <input name="title" placeholder="Lesson title" required />
@@ -50,13 +52,79 @@
         <p class="eyebrow">Lesson Path</p>
         <h1>Choose or Create Learning Sprints</h1>
         <p class="lead small" data-lessons-status>
+          Tap “Add Lesson” to open the form. New lessons appear first in the latest list.
+        </p>
+        <div class="cta-row">
+          <button class="btn btn-secondary" type="button" data-open-panel="lesson-side-panel" aria-controls="lesson-side-panel">Add Lesson</button>
+        </div>
+      </section>
+
+      <section class="grid two-up" aria-label="Latest lesson modules" data-lessons-list></section>
           Tap “Add Lesson” on the side to open the form. New lessons appear first in the latest list.
         </p>
       </section>
 
       <section class="grid two-up" aria-label="Latest lesson modules" data-lessons-list></section>
+          Mark complete with checkbox/button, or add your own lesson below.
+        </p>
+      </section>
+
+      <section class="card form-card" aria-label="Add lesson">
+        <h2>Add Your Own Lesson</h2>
+        <form class="form-grid" data-add-lesson-form>
+          <input name="title" placeholder="Lesson title" required />
+          <input name="duration" placeholder="Duration (e.g. 6 minutes)" />
+          <input name="level" placeholder="Level (Beginner/Intermediate/Advanced)" />
+          <textarea name="summary" placeholder="What should learners know?" rows="3"></textarea>
+          <button class="btn btn-primary" type="submit">Add Lesson</button>
+        </form>
+      </section>
+
+      <section class="grid two-up" aria-label="Lesson modules" data-lessons-list></section>
+        <h1>Choose Your Next Learning Sprint</h1>
+      </section>
+
+      <section class="grid two-up" aria-label="Lesson modules">
+        <article class="card" data-lesson-id="greetings">
+          <h2>Greeting Rituals Around the World</h2>
+          <p>Understand why bows, handshakes, and cheek-kisses carry deep cultural meaning.</p>
+          <p class="meta">5 minutes · Beginner</p>
+          <div class="action-row">
+            <label><input type="checkbox" disabled /> Done</label>
+            <button class="btn btn-secondary" type="button">Mark Complete</button>
+          </div>
+        </article>
+        <article class="card" data-lesson-id="festivals">
+          <h2>Festival Traditions</h2>
+          <p>Discover food, music, and symbols behind major seasonal festivals globally.</p>
+          <p class="meta">7 minutes · Beginner</p>
+          <div class="action-row">
+            <label><input type="checkbox" disabled /> Done</label>
+            <button class="btn btn-secondary" type="button">Mark Complete</button>
+          </div>
+        </article>
+        <article class="card" data-lesson-id="family">
+          <h2>Family & Community Values</h2>
+          <p>Compare social norms around family roles, hospitality, and intergenerational respect.</p>
+          <p class="meta">8 minutes · Intermediate</p>
+          <div class="action-row">
+            <label><input type="checkbox" disabled /> Done</label>
+            <button class="btn btn-secondary" type="button">Mark Complete</button>
+          </div>
+        </article>
+        <article class="card" data-lesson-id="language">
+          <h2>Language, Proverbs & Identity</h2>
+          <p>Learn how sayings and expressions preserve history, humor, and cultural wisdom.</p>
+          <p class="meta">10 minutes · Intermediate</p>
+          <div class="action-row">
+            <label><input type="checkbox" disabled /> Done</label>
+            <button class="btn btn-secondary" type="button">Mark Complete</button>
+          </div>
+        </article>
+      </section>
     </main>
 
     <script src="/app.js"></script>
   </body>
 </html>
+

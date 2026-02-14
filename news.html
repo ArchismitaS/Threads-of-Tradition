@@ -28,6 +28,7 @@
     </header>
 
     <button class="side-launcher" type="button" data-open-panel="news-side-panel" aria-controls="news-side-panel">
+    <button class="side-launcher" type="button" data-open-news-panel aria-controls="news-side-panel">
       Add News
     </button>
 
@@ -35,6 +36,7 @@
       <div class="side-panel-head">
         <h2>Add Cultural News</h2>
         <button class="btn btn-secondary" type="button" data-close-panel="news-side-panel">Close</button>
+        <button class="btn btn-secondary" type="button" data-close-news-panel>Close</button>
       </div>
       <form class="form-grid" data-add-news-form>
         <input name="title" placeholder="Headline" required />
@@ -51,11 +53,35 @@
         <p class="eyebrow">Latest Cultural News</p>
         <h1>Stay Updated on Global Traditions & Heritage</h1>
         <p class="lead small" data-news-status>
+          Tap “Add News” to open the form. New items appear first in the latest list.
+        </p>
+        <div class="cta-row">
+          <button class="btn btn-secondary" type="button" data-open-panel="news-side-panel" aria-controls="news-side-panel">Add News</button>
+        </div>
+      </section>
+
+      <section class="stack" aria-label="Latest cultural news list" data-news-list>
           Tap “Add News” on the side to open the form. New items appear first in the latest list.
         </p>
       </section>
 
       <section class="stack" aria-label="Latest cultural news list" data-news-list>
+        <p class="lead small" data-news-status>Add your own cultural news updates too.</p>
+      </section>
+
+      <section class="card form-card" aria-label="Add news">
+        <h2>Add Cultural News</h2>
+        <form class="form-grid" data-add-news-form>
+          <input name="title" placeholder="Headline" required />
+          <input name="source" placeholder="Source" />
+          <input name="date" type="date" />
+          <input name="url" placeholder="Source URL" />
+          <textarea name="summary" placeholder="Short summary" rows="3"></textarea>
+          <button class="btn btn-primary" type="submit">Add News Item</button>
+        </form>
+      </section>
+
+      <section class="stack" aria-label="Cultural news list" data-news-list>
         <article class="card">
           <h2>Loading latest cultural news…</h2>
           <p>Please wait while we fetch the latest headlines.</p>
