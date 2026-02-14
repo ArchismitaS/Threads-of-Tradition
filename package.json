@@ -1,0 +1,12 @@
+{
+  "name": "threads-of-tradition",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Duolingo-style cultural learning platform",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "preview": "node server.js",
+    "check": "node --check server.js && node --check app.js"
+  }
+}

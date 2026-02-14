@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threads of Tradition | Lessons</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">Threads of Tradition</a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/lessons" aria-current="page">Lessons</a></li>
+          <li><a href="/traditions">Traditions</a></li>
+          <li><a href="/news">News</a></li>
+          <li><a href="/profile">Profile</a></li>
+          <li><a href="/progress">Progress</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <button class="side-launcher" type="button" data-open-panel="lesson-side-panel" aria-controls="lesson-side-panel">
+      Add Lesson
+    </button>
+
+    <aside class="side-panel" id="lesson-side-panel" data-lesson-panel>
+      <div class="side-panel-head">
+        <h2>Add Your Own Lesson</h2>
+        <button class="btn btn-secondary" type="button" data-close-panel="lesson-side-panel">Close</button>
+      </div>
+      <form class="form-grid" data-add-lesson-form>
+        <input name="title" placeholder="Lesson title" required />
+        <input name="duration" placeholder="Duration (e.g. 6 minutes)" />
+        <input name="level" placeholder="Level (Beginner/Intermediate/Advanced)" />
+        <textarea name="summary" placeholder="What should learners know?" rows="3"></textarea>
+        <button class="btn btn-primary" type="submit">Add Lesson</button>
+      </form>
+    </aside>
+
+    <main class="container">
+      <section class="page-header">
+        <p class="eyebrow">Lesson Path</p>
+        <h1>Choose or Create Learning Sprints</h1>
+        <p class="lead small" data-lessons-status>
+          Tap “Add Lesson” on the side to open the form. New lessons appear first in the latest list.
+        </p>
+      </section>
+
+      <section class="grid two-up" aria-label="Latest lesson modules" data-lessons-list></section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
