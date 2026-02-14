@@ -4,5 +4,13 @@
   "streak": 1,
   "badges": [
     "First Steps"
-  ]
+  ],
+  "customLessons": [],
+  "customNews": [],
+  "profile": {
+    "displayName": "Cultural Learner",
+    "region": "Global",
+    "bio": "Exploring the world one tradition at a time.",
+    "learningGoal": "Build daily cultural literacy habits."
+  }
 }

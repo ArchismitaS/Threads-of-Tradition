@@ -21,6 +21,7 @@
           <li><a href="/lessons">Lessons</a></li>
           <li><a href="/traditions">Traditions</a></li>
           <li><a href="/news" aria-current="page">News</a></li>
+          <li><a href="/profile">Profile</a></li>
           <li><a href="/progress">Progress</a></li>
         </ul>
       </nav>
@@ -30,6 +31,19 @@
       <section class="page-header">
         <p class="eyebrow">Latest Cultural News</p>
         <h1>Stay Updated on Global Traditions & Heritage</h1>
+        <p class="lead small" data-news-status>Add your own cultural news updates too.</p>
+      </section>
+
+      <section class="card form-card" aria-label="Add news">
+        <h2>Add Cultural News</h2>
+        <form class="form-grid" data-add-news-form>
+          <input name="title" placeholder="Headline" required />
+          <input name="source" placeholder="Source" />
+          <input name="date" type="date" />
+          <input name="url" placeholder="Source URL" />
+          <textarea name="summary" placeholder="Short summary" rows="3"></textarea>
+          <button class="btn btn-primary" type="submit">Add News Item</button>
+        </form>
       </section>
 
       <section class="stack" aria-label="Cultural news list" data-news-list>
