@@ -8,6 +8,34 @@ const HOST = process.env.HOST || "0.0.0.0";
 const ROOT = __dirname;
 const STATE_PATH = path.join(ROOT, "data", "state.json");
 
+const defaultLessons = [
+  {
+    id: "greetings",
+    title: "Greeting Rituals Around the World",
+    summary: "Understand why bows, handshakes, and cheek-kisses carry deep cultural meaning.",
+    meta: "5 minutes · Beginner",
+  },
+  {
+    id: "festivals",
+    title: "Festival Traditions",
+    summary: "Discover food, music, and symbols behind major seasonal festivals globally.",
+    meta: "7 minutes · Beginner",
+  },
+  {
+    id: "family",
+    title: "Family & Community Values",
+    summary: "Compare social norms around family roles, hospitality, and intergenerational respect.",
+    meta: "8 minutes · Intermediate",
+  },
+  {
+    id: "language",
+    title: "Language, Proverbs & Identity",
+    summary: "Learn how sayings and expressions preserve history, humor, and cultural wisdom.",
+    meta: "10 minutes · Intermediate",
+  },
+];
+
+const defaultNews = [
 const lessonIds = ["greetings", "festivals", "family", "language"];
 const newsIds = ["unesco-restoration", "diaspora-festival", "language-revival", "museum-repatriation"];
 
@@ -50,6 +78,54 @@ const newsFeed = [
   },
 ];
 
+const defaultProfile = {
+  displayName: "Cultural Learner",
+  region: "Global",
+  bio: "Exploring the world one tradition at a time.",
+  learningGoal: "Build daily cultural literacy habits.",
+};
+
+function normalizeLesson(lesson) {
+  return {
+    id: String(lesson.id || "").trim(),
+    title: String(lesson.title || "Untitled lesson").trim(),
+    summary: String(lesson.summary || "").trim(),
+    meta: String(lesson.meta || "Custom").trim(),
+  };
+}
+
+function normalizeNews(news) {
+  return {
+    id: String(news.id || "").trim(),
+    title: String(news.title || "Untitled news").trim(),
+    source: String(news.source || "Community submission").trim(),
+    date: String(news.date || new Date().toISOString().slice(0, 10)).trim(),
+    summary: String(news.summary || "").trim(),
+    url: String(news.url || "https://example.com").trim(),
+  };
+}
+
+function allLessonIds(state) {
+  return [...defaultLessons, ...state.customLessons].map((item) => item.id);
+}
+
+function allNewsIds(state) {
+  return [...defaultNews, ...state.customNews].map((item) => item.id);
+}
+
+function readState() {
+  const raw = fs.readFileSync(STATE_PATH, "utf8");
+  const parsed = JSON.parse(raw);
+
+  const customLessons = Array.isArray(parsed.customLessons)
+    ? parsed.customLessons.map(normalizeLesson).filter((item) => item.id)
+    : [];
+
+  const customNews = Array.isArray(parsed.customNews)
+    ? parsed.customNews.map(normalizeNews).filter((item) => item.id)
+    : [];
+
+  const readNews = Array.isArray(parsed.readNews)
 function readState() {
   const raw = fs.readFileSync(STATE_PATH, "utf8");
   const parsed = JSON.parse(raw);
@@ -59,6 +135,25 @@ function readState() {
       ? parsed.readStories
       : [];
 
+  const profile = {
+    ...defaultProfile,
+    ...(parsed.profile || {}),
+  };
+
+  const state = {
+    completedLessons: Array.isArray(parsed.completedLessons) ? parsed.completedLessons : [],
+    readNews,
+    streak: Number.isFinite(parsed.streak) ? parsed.streak : 1,
+    badges: Array.isArray(parsed.badges) && parsed.badges.length ? parsed.badges : ["First Steps"],
+    customLessons,
+    customNews,
+    profile,
+  };
+
+  state.completedLessons = state.completedLessons.filter((id) => allLessonIds(state).includes(id));
+  state.readNews = state.readNews.filter((id) => allNewsIds(state).includes(id));
+
+  return state;
   return {
     completedLessons: Array.isArray(parsed.completedLessons) ? parsed.completedLessons : [],
     readNews: savedReadNews,
@@ -75,6 +170,14 @@ function ensureBadge(state, name) {
   if (!state.badges.includes(name)) {
     state.badges.push(name);
   }
+}
+
+function getLessonsCatalog(state) {
+  return [...defaultLessons, ...state.customLessons];
+}
+
+function getNewsFeed(state) {
+  return [...defaultNews, ...state.customNews];
 }
 
 function collectBody(req) {
@@ -120,11 +223,105 @@ function getContentType(filePath) {
   return map[ext] || "application/octet-stream";
 }
 
+function makeId(prefix, text) {
+  const slug = String(text || "item")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 40);
+  return `${prefix}-${slug || "item"}-${Date.now().toString(36)}`;
+}
+
+async function parseJsonBody(req, res) {
+  const body = await collectBody(req);
+  try {
+    return JSON.parse(body || "{}");
+  } catch {
+    badRequest(res, "Invalid JSON body");
+    return null;
+  }
+}
+
 async function handleApi(req, res, pathname) {
   if (pathname === "/api/health" && req.method === "GET") {
     return json(res, 200, { ok: true });
   }
 
+  if (pathname === "/api/lessons" && req.method === "GET") {
+    const state = readState();
+    return json(res, 200, getLessonsCatalog(state));
+  }
+
+  if (pathname === "/api/news" && req.method === "GET") {
+    const state = readState();
+    return json(res, 200, getNewsFeed(state));
+  }
+
+  if (pathname === "/api/profile" && req.method === "GET") {
+    const state = readState();
+    return json(res, 200, state.profile);
+  }
+
+  if (pathname === "/api/profile" && req.method === "PUT") {
+    const payload = await parseJsonBody(req, res);
+    if (!payload) return;
+
+    const state = readState();
+    state.profile = {
+      ...defaultProfile,
+      displayName: String(payload.displayName || defaultProfile.displayName).slice(0, 80),
+      region: String(payload.region || defaultProfile.region).slice(0, 80),
+      bio: String(payload.bio || defaultProfile.bio).slice(0, 400),
+      learningGoal: String(payload.learningGoal || defaultProfile.learningGoal).slice(0, 200),
+    };
+    writeState(state);
+    return json(res, 200, state.profile);
+  }
+
+  if (pathname === "/api/lessons" && req.method === "POST") {
+    const payload = await parseJsonBody(req, res);
+    if (!payload) return;
+
+    const title = String(payload.title || "").trim();
+    if (!title) return badRequest(res, "Lesson title is required");
+
+    const lesson = normalizeLesson({
+      id: makeId("lesson", title),
+      title,
+      summary: String(payload.summary || "Community-created lesson").trim(),
+      meta: `${String(payload.duration || "5 minutes").trim()} · ${String(payload.level || "Custom").trim()}`,
+    });
+
+    const state = readState();
+    state.customLessons.push(lesson);
+    writeState(state);
+    return json(res, 201, lesson);
+  }
+
+  if (pathname === "/api/news" && req.method === "POST") {
+    const payload = await parseJsonBody(req, res);
+    if (!payload) return;
+
+    const title = String(payload.title || "").trim();
+    if (!title) return badRequest(res, "News title is required");
+
+    const item = normalizeNews({
+      id: makeId("news", title),
+      title,
+      source: String(payload.source || "Community Desk").trim(),
+      date: String(payload.date || new Date().toISOString().slice(0, 10)).trim(),
+      summary: String(payload.summary || "Community submitted cultural update.").trim(),
+      url: String(payload.url || "https://example.com").trim(),
+    });
+
+    const state = readState();
+    state.customNews.push(item);
+    writeState(state);
+    return json(res, 201, item);
+  }
+
+  if (pathname === "/api/state" && req.method === "GET") {
+    return json(res, 200, readState());
   if (pathname === "/api/news" && req.method === "GET") {
     return json(res, 200, newsFeed);
   }
@@ -170,10 +367,19 @@ async function handleApi(req, res, pathname) {
       readNews: [],
       streak: 1,
       badges: ["First Steps"],
+      customLessons: [],
+      customNews: [],
+      profile: { ...defaultProfile },
     };
     writeState(reset);
     return json(res, 200, reset);
   }
+
+  const lessonMatch = pathname.match(/^\/api\/lessons\/([a-z0-9-]+)\/toggle$/);
+  if (lessonMatch && req.method === "POST") {
+    const id = lessonMatch[1];
+    const state = readState();
+    if (!allLessonIds(state).includes(id)) return badRequest(res, "Unknown lesson id");
 
   const lessonMatch = pathname.match(/^\/api\/lessons\/([a-z-]+)\/toggle$/);
   if (lessonMatch && req.method === "POST") {
@@ -190,6 +396,7 @@ async function handleApi(req, res, pathname) {
       state.streak += 1;
     }
 
+    if (state.completedLessons.length >= allLessonIds(state).length) {
     if (state.completedLessons.length >= lessonIds.length) {
       ensureBadge(state, "Lesson Pathfinder");
     }
@@ -197,6 +404,12 @@ async function handleApi(req, res, pathname) {
     writeState(state);
     return json(res, 200, state);
   }
+
+  const newsMatch = pathname.match(/^\/api\/(news|stories)\/([a-z0-9-]+)\/toggle$/);
+  if (newsMatch && req.method === "POST") {
+    const id = newsMatch[2];
+    const state = readState();
+    if (!allNewsIds(state).includes(id)) return badRequest(res, "Unknown news id");
 
   const newsMatch = pathname.match(/^\/api\/(news|stories)\/([a-z-]+)\/toggle$/);
   if (newsMatch && req.method === "POST") {
@@ -212,6 +425,7 @@ async function handleApi(req, res, pathname) {
       state.readNews.push(id);
     }
 
+    if (state.readNews.length >= allNewsIds(state).length) {
     if (state.readNews.length >= newsIds.length) {
       ensureBadge(state, "News Explorer");
     }
@@ -232,6 +446,10 @@ function resolvePathname(pathname) {
     "/news": "/news.html",
     "/stories": "/news.html",
     "/progress": "/progress.html",
+    "/profile": "/profile.html",
+  };
+
+  if (routes[pathname]) return routes[pathname];
   };
 
   // Normalize trailing slashes so "/lessons/" resolves like "/lessons"
