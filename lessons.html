@@ -21,6 +21,7 @@
           <li><a href="/lessons" aria-current="page">Lessons</a></li>
           <li><a href="/traditions">Traditions</a></li>
           <li><a href="/news">News</a></li>
+          <li><a href="/profile">Profile</a></li>
           <li><a href="/progress">Progress</a></li>
         </ul>
       </nav>
@@ -29,6 +30,24 @@
     <main class="container">
       <section class="page-header">
         <p class="eyebrow">Lesson Path</p>
+        <h1>Choose or Create Learning Sprints</h1>
+        <p class="lead small" data-lessons-status>
+          Mark complete with checkbox/button, or add your own lesson below.
+        </p>
+      </section>
+
+      <section class="card form-card" aria-label="Add lesson">
+        <h2>Add Your Own Lesson</h2>
+        <form class="form-grid" data-add-lesson-form>
+          <input name="title" placeholder="Lesson title" required />
+          <input name="duration" placeholder="Duration (e.g. 6 minutes)" />
+          <input name="level" placeholder="Level (Beginner/Intermediate/Advanced)" />
+          <textarea name="summary" placeholder="What should learners know?" rows="3"></textarea>
+          <button class="btn btn-primary" type="submit">Add Lesson</button>
+        </form>
+      </section>
+
+      <section class="grid two-up" aria-label="Lesson modules" data-lessons-list></section>
         <h1>Choose Your Next Learning Sprint</h1>
       </section>
 
